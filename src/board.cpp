@@ -7,7 +7,7 @@ Board::Board()
               {Piece::BP, Piece::BP, Piece::BP, Piece::BP, Piece::BP, Piece::BP, Piece::BP, Piece::BP},
               {Piece::NO, Piece::NO, Piece::NO, Piece::NO, Piece::NO, Piece::NO, Piece::NO, Piece::NO},
               {Piece::NO, Piece::NO, Piece::NO, Piece::NO, Piece::NO, Piece::NO, Piece::NO, Piece::NO},
-              {Piece::NO, Piece::NO, Piece::NO, Piece::WP, Piece::NO, Piece::NO, Piece::NO, Piece::NO},
+              {Piece::NO, Piece::NO, Piece::NO, Piece::NO, Piece::NO, Piece::NO, Piece::NO, Piece::NO},
               {Piece::NO, Piece::NO, Piece::NO, Piece::NO, Piece::NO, Piece::NO, Piece::NO, Piece::NO},
               {Piece::WP, Piece::WP, Piece::WP, Piece::WP, Piece::WP, Piece::WP, Piece::WP, Piece::WP},
               {Piece::WR, Piece::WN, Piece::WB, Piece::WK, Piece::WQ, Piece::WB, Piece::WN, Piece::WR}}} {}
