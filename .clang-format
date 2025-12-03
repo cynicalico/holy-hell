@@ -1,0 +1,23 @@
+---
+Language: Cpp
+BasedOnStyle: LLVM
+AccessModifierOffset: -4
+Standard: Latest
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ColumnLimit: 120
+AlignAfterOpenBracket: Align
+BinPackParameters: false
+AlignEscapedNewlines: LeftWithLastLine
+BreakTemplateDeclarations: Yes
+PackConstructorInitializers: Never
+IndentPPDirectives: AfterHash
+SortIncludes: CaseInsensitive
+AllowShortIfStatementsOnASingleLine: true
+AlignTrailingComments: false
+AllowShortCaseExpressionOnASingleLine: true
+AllowShortCaseLabelsOnASingleLine: true
+BinPackArguments: false
+AlignOperands: AlignAfterOperator
+...
