@@ -24,6 +24,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(SDL3_image)
 
+FetchContent_Declare(
+        SDL3_ttf
+        GIT_REPOSITORY https://github.com/libsdl-org/SDL_ttf
+        GIT_TAG release-3.2.2
+)
+FetchContent_MakeAvailable(SDL3_ttf)
+
 add_library(libholyhell)
 target_compile_features(libholyhell PRIVATE cxx_std_23)
 target_sources(libholyhell
@@ -39,7 +46,7 @@ target_sources(libholyhell
         "include/engine.hpp"
         "include/piece.hpp"
 )
-target_link_libraries(libholyhell PUBLIC fmt::fmt SDL3::SDL3 SDL3_image::SDL3_image)
+target_link_libraries(libholyhell PUBLIC fmt::fmt SDL3::SDL3 SDL3_image::SDL3_image SDL3_ttf::SDL3_ttf)
 
 add_executable(holy-hell main.cpp)
 target_compile_features(holy-hell PRIVATE cxx_std_23)

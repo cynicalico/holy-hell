@@ -2,6 +2,7 @@
 #include "fmt/format.h"
 #include "SDL3/SDL.h"
 #include "SDL3_image/SDL_image.h"
+#include "SDL3_ttf/SDL_ttf.h"
 #include <utility>
 
 constexpr auto BOARD_IMAGE_SIZE = std::array{142, 142};
@@ -15,6 +16,8 @@ SDL_Texture *board_image;
 SDL_Texture *white_pieces_image;
 SDL_Texture *black_pieces_image;
 SDL_Texture *selector_image;
+
+TTF_Font *font;
 
 void init_sdl();
 void quit_sdl();
@@ -40,6 +43,8 @@ int main(int, char *[]) {
 void init_sdl() {
     if (!SDL_Init(SDL_INIT_VIDEO))
         throw std::runtime_error(fmt::format("Failed to initialize SDL: {}", SDL_GetError()));
+
+    if (!TTF_Init()) throw std::runtime_error(fmt::format("Failed to initialize SDL_ttf: {}", SDL_GetError()));
 
     window = SDL_CreateWindow("Holy Hell", BOARD_IMAGE_SIZE[0] * SCALE, BOARD_IMAGE_SIZE[1] * SCALE, 0);
     if (!window) throw std::runtime_error(fmt::format("Failed to create window: {}", SDL_GetError()));
@@ -68,10 +73,18 @@ void load_assets() {
     selector_image = IMG_LoadTexture(renderer, "assets/selector.png");
     if (!selector_image) throw std::runtime_error(fmt::format("Failed to load selector image: {}", SDL_GetError()));
     SDL_SetTextureScaleMode(selector_image, SDL_SCALEMODE_NEAREST);
+
+    font = TTF_OpenFont("assets/Silver.ttf", 19 * 2);
+    if (!font) throw std::runtime_error(fmt::format("Failed to load font: {}", SDL_GetError()));
 }
+
+enum class State { Idle, Grabbed, Released };
 
 void run() {
     Engine engine;
+
+    auto state = State::Idle;
+    auto active_piece = std::array{-1, -1};
 
     bool running = true;
 
@@ -91,20 +104,47 @@ void run() {
             float mouse_x, mouse_y;
             SDL_GetMouseState(&mouse_x, &mouse_y);
 
+            bool hovered = false;
             for (int rank = 7; rank >= 0; --rank) {
                 for (int file = 0; file < 8; ++file) {
                     auto piece = engine.board[rank, file];
                     if (piece == Piece::NO) continue;
 
-                    bool hovered = (mouse_x >= BOARD_IMAGE_OFFSET[0] * SCALE + file * 16 * SCALE) &&
-                                   (mouse_x < BOARD_IMAGE_OFFSET[0] * SCALE + (file + 1) * 16 * SCALE) &&
-                                   (mouse_y >= BOARD_IMAGE_OFFSET[1] * SCALE + ((7 - rank) * 12) * SCALE) &&
-                                   (mouse_y < BOARD_IMAGE_OFFSET[1] * SCALE + ((7 - rank + 1) * 12) * SCALE);
+                    if (!hovered) {
+                        hovered = (mouse_x >= BOARD_IMAGE_OFFSET[0] * SCALE + file * 16 * SCALE) &&
+                                  (mouse_x < BOARD_IMAGE_OFFSET[0] * SCALE + (file + 1) * 16 * SCALE) &&
+                                  (mouse_y >= BOARD_IMAGE_OFFSET[1] * SCALE + ((7 - rank) * 12) * SCALE) &&
+                                  (mouse_y < BOARD_IMAGE_OFFSET[1] * SCALE + ((7 - rank + 1) * 12) * SCALE);
+                        if (hovered) {
+                            active_piece = {rank, file};
+                        }
+                    }
 
-                    draw_piece(piece, rank, file, hovered);
+                    draw_piece(piece, rank, file, active_piece[0] == rank && active_piece[1] == file);
                 }
+            }
+            if (!hovered) active_piece = {-1, -1};
 
-                // break;
+            if (hovered) {
+                SDL_Color white = {255, 255, 255, 255};
+                SDL_Color transparent = {0x96, 0xa2, 0xb3, 0xff};
+                SDL_Surface *text_surf = TTF_RenderText_Solid(
+                    font, fmt::format("({}, {})", active_piece[0], active_piece[1]).c_str(), 0, white);
+                if (!text_surf) throw std::runtime_error(fmt::format("Failed to render text: {}", SDL_GetError()));
+
+                SDL_Texture *text_image = SDL_CreateTextureFromSurface(renderer, text_surf);
+                if (!text_image)
+                    throw std::runtime_error(fmt::format("Failed to create text image: {}", SDL_GetError()));
+                SDL_DestroySurface(text_surf);
+
+                float text_image_w, text_image_h;
+                SDL_GetTextureSize(text_image, &text_image_w, &text_image_h);
+
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xff);
+                auto dst_rect = SDL_FRect(4, (BOARD_IMAGE_SIZE[1] * SCALE) - text_image_h, text_image_w, text_image_h);
+                SDL_RenderTexture(renderer, text_image, nullptr, &dst_rect);
+
+                SDL_DestroyTexture(text_image);
             }
 
             SDL_RenderPresent(renderer);
